@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: taskflow-backend
+    env: node
+    plan: free # Deploys on Render's free tier
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGO_URI
+        sync: false # Set manually in Render dashboard
+      - key: FRONTEND_URL
+        sync: false # Set manually in Render dashboard (Vercel URL)
