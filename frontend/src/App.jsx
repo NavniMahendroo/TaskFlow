@@ -3,12 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { 
   Plus, Search, Filter, Layers, AlertCircle, RefreshCw,
-  Sun, Moon, Clock, Activity, CheckSquare
+  Sun, Moon, Clock, Activity, CheckSquare, Settings
 } from 'lucide-react';
 
 import { fetchTasks, createTask, updateTask, deleteTask } from './api';
 import TaskCard from './components/TaskCard';
 import TaskForm from './components/TaskForm';
+import Auth from './components/Auth';
+import SettingsModal from './components/SettingsModal';
 
 const App = () => {
   const queryClient = useQueryClient();
@@ -16,8 +18,17 @@ const App = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
+  
+  // Settings view toggle
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Initialize theme state (from localStorage or system preference)
+  // Load user details from localStorage
+  const [currentUser, setCurrentUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  // Initialize theme state
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) return savedTheme;
@@ -39,6 +50,7 @@ const App = () => {
   const { data: tasks = [], isLoading, isError, error, refetch, isRefetching } = useQuery({
     queryKey: ['tasks'],
     queryFn: fetchTasks,
+    enabled: !!currentUser, // Only fetch tasks when a user is signed in
   });
 
   // Mutations
@@ -102,6 +114,34 @@ const App = () => {
     setTaskToEdit(null);
   };
 
+  // Profile management handlers
+  const handleUpdateProfile = (updatedUser) => {
+    setCurrentUser(updatedUser);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+    setIsSettingsOpen(false);
+    toast.success('Logged out successfully! See you soon! 👋');
+  };
+
+  // Bulk deletion cascade (Danger Zone)
+  const handleResetAll = async () => {
+    if (tasks.length === 0) {
+      toast.success('No tasks to delete!');
+      return;
+    }
+
+    const deletePromises = tasks.map((t) => deleteMutation.mutateAsync(t._id));
+    
+    toast.promise(Promise.all(deletePromises), {
+      loading: 'Resetting all tasks...',
+      success: 'Dashboard reset successfully! 🧹',
+      error: 'Failed to reset dashboard.',
+    });
+  };
+
   // Metrics calculations
   const totalTasks = tasks.length;
   const pendingCount = tasks.filter(t => t.status === 'Pending').length;
@@ -121,9 +161,14 @@ const App = () => {
 
   const isDark = theme === 'dark';
 
+  // Render auth/landing page if no user session
+  if (!currentUser) {
+    return <Auth onAuthSuccess={setCurrentUser} theme={theme} />;
+  }
+
   return (
     <div className={`min-h-screen pb-16 flex flex-col relative overflow-hidden transition-colors duration-300 ${
-      isDark ? 'bg-[#0b0f19] text-slate-100' : 'bg-slate-50 text-slate-800'
+      isDark ? 'bg-[#060813] text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
       
       {/* Theme-adaptive ambient header background shapes */}
@@ -132,7 +177,7 @@ const App = () => {
 
       {/* Navbar / Header */}
       <header className={`sticky top-0 z-40 w-full border-b backdrop-blur-md transition-colors duration-300 ${
-        isDark ? 'border-slate-800/80 bg-[#0f172a]/75' : 'border-slate-200/60 bg-white/75'
+        isDark ? 'border-slate-900 bg-[#0c0e1a]/85' : 'border-slate-200/60 bg-white/75'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex justify-between items-center">
           <div className="flex items-center space-x-3">
@@ -176,6 +221,28 @@ const App = () => {
             >
               <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
             </button>
+
+            {/* User Account / Settings Button */}
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className={`flex items-center space-x-2 p-1.5 border rounded-xl transition-all shadow-premium focus:outline-none focus:ring-2 cursor-pointer ${
+                isDark 
+                  ? 'bg-slate-800/60 border-slate-800 hover:bg-slate-800 focus:ring-slate-700' 
+                  : 'bg-white border-slate-200 hover:bg-slate-50 focus:ring-slate-300'
+              }`}
+              title="Open Settings"
+            >
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="w-7 h-7 rounded-lg bg-white border border-slate-200/50 p-0.5 object-contain"
+              />
+              <span className={`text-xs font-bold pr-1.5 hidden sm:inline max-w-[120px] truncate ${
+                isDark ? 'text-slate-300' : 'text-slate-700'
+              }`}>
+                {currentUser.name}
+              </span>
+            </button>
             
             {/* Add Task Button */}
             <button
@@ -196,7 +263,7 @@ const App = () => {
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8" aria-label="Task metrics summary">
           {/* Card: Total */}
           <div className={`border p-5 rounded-2xl shadow-lg flex items-center justify-between transition-colors duration-300 ${
-            isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200/60 shadow-premium'
+            isDark ? 'bg-[#0f1322]/50 border-slate-900/80 shadow-lg' : 'bg-white border-slate-200/60 shadow-premium'
           }`}>
             <div>
               <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Total Tasks</span>
@@ -211,7 +278,7 @@ const App = () => {
 
           {/* Card: Pending */}
           <div className={`border p-5 rounded-2xl shadow-lg flex items-center justify-between transition-colors duration-300 ${
-            isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200/60 shadow-premium'
+            isDark ? 'bg-[#0f1322]/50 border-slate-900/80 shadow-lg' : 'bg-white border-slate-200/60 shadow-premium'
           }`}>
             <div>
               <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Pending</span>
@@ -226,7 +293,7 @@ const App = () => {
 
           {/* Card: In Progress */}
           <div className={`border p-5 rounded-2xl shadow-lg flex items-center justify-between transition-colors duration-300 ${
-            isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200/60 shadow-premium'
+            isDark ? 'bg-[#0f1322]/50 border-slate-900/80 shadow-lg' : 'bg-white border-slate-200/60 shadow-premium'
           }`}>
             <div>
               <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>In Progress</span>
@@ -241,7 +308,7 @@ const App = () => {
 
           {/* Card: Completed */}
           <div className={`border p-5 rounded-2xl shadow-lg flex items-center justify-between transition-colors duration-300 ${
-            isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200/60 shadow-premium'
+            isDark ? 'bg-[#0f1322]/50 border-slate-900/80 shadow-lg' : 'bg-white border-slate-200/60 shadow-premium'
           }`}>
             <div>
               <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Completed</span>
@@ -257,7 +324,7 @@ const App = () => {
 
         {/* Filter controls / Toolbar */}
         <section className={`border p-4 rounded-2xl shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 transition-colors duration-300 ${
-          isDark ? 'bg-[#0f172a]/40 border-slate-800/80' : 'bg-white border-slate-200/60'
+          isDark ? 'bg-[#0f1322]/45 border-slate-900/85' : 'bg-white border-slate-200/60'
         }`} aria-label="Search and filter options">
           {/* Search Box */}
           <div className="relative flex-grow max-w-md">
@@ -269,10 +336,10 @@ const App = () => {
               placeholder="Search task titles or details..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:border-transparent transition-all text-sm ${
                 isDark 
-                  ? 'border-slate-800/80 bg-slate-950/40 focus:bg-slate-950/80 text-slate-200 placeholder-slate-500 focus:ring-brand-500' 
-                  : 'border-slate-200 bg-slate-50/50 focus:bg-white text-slate-800 placeholder-slate-400 focus:ring-brand-500'
+                  ? 'border-slate-800 bg-[#0f1322] text-slate-200 placeholder-slate-500 focus:bg-slate-950 focus:ring-brand-500' 
+                  : 'border-slate-300 bg-white text-slate-950 placeholder-slate-400 focus:ring-brand-500'
               }`}
             />
           </div>
@@ -345,7 +412,7 @@ const App = () => {
           </div>
         ) : filteredTasks.length === 0 ? (
           /* Empty Dashboard State */
-          <div className={`border rounded-3xl p-12 text-center max-w-md mx-auto mt-12 shadow-lg transition-colors duration-300 ${
+          <div className={`border rounded-3xl p-12 text-center max-w-md mx-auto mt-12 shadow-premium dark:shadow-lg transition-colors duration-300 ${
             isDark ? 'bg-[#0f172a]/30 border-slate-800/60' : 'bg-white border-slate-200/60 shadow-premium'
           }`}>
             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6 border ${
@@ -402,6 +469,18 @@ const App = () => {
           onSubmit={handleFormSubmit}
           onCancel={handleCloseForm}
           isSubmitting={createMutation.isPending || updateMutation.isPending}
+          theme={theme}
+        />
+      )}
+
+      {/* Account Settings Modal */}
+      {isSettingsOpen && (
+        <SettingsModal
+          currentUser={currentUser}
+          onUpdateProfile={handleUpdateProfile}
+          onLogout={handleLogout}
+          onResetAll={handleResetAll}
+          onClose={() => setIsSettingsOpen(false)}
           theme={theme}
         />
       )}

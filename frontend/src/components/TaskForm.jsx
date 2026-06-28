@@ -76,11 +76,11 @@ const TaskForm = ({ taskToEdit, onSubmit, onCancel, isSubmitting, theme }) => {
 
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300 ${
-      isDark ? 'bg-slate-955/80 dark:bg-slate-950/80' : 'bg-slate-900/40'
+      isDark ? 'bg-slate-950/80' : 'bg-slate-900/40'
     }`}>
       <div className={`rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-100 border transition-colors duration-300 ${
         isDark 
-          ? 'bg-slate-900 border-slate-800/80 text-slate-100' 
+          ? 'bg-[#0f1322] border-slate-900 text-slate-100 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)]' 
           : 'bg-white border-slate-100 text-slate-800'
       }`}>
         
@@ -122,16 +122,12 @@ const TaskForm = ({ taskToEdit, onSubmit, onCancel, isSubmitting, theme }) => {
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
                 errors.title 
                   ? 'border-rose-500/80 focus:ring-rose-500' 
-                  : (isDark ? 'border-slate-800 focus:ring-brand-500' : 'border-slate-200 focus:ring-brand-500')
-              } ${
-                isDark 
-                  ? 'bg-slate-955/40 dark:bg-slate-950/40 focus:bg-slate-950/80 text-slate-100 placeholder-slate-500' 
-                  : 'bg-slate-50/50 focus:bg-white text-slate-800 placeholder-slate-400'
+                  : (isDark ? 'border-slate-800 bg-[#0f1322] text-slate-100 placeholder-slate-500 focus:bg-slate-950 focus:ring-brand-500' : 'border-slate-300 bg-white text-slate-950 placeholder-slate-400 focus:ring-brand-500')
               }`}
               disabled={isSubmitting}
             />
             {errors.title && (
-              <span className={`text-xs font-medium mt-1.5 block ${isDark ? 'text-rose-400' : 'text-rose-500'}`}>{errors.title}</span>
+              <span className={`text-xs font-medium mt-1.5 block ${isDark ? 'text-rose-500' : 'text-rose-500'}`}>{errors.title}</span>
             )}
           </div>
 
@@ -151,16 +147,12 @@ const TaskForm = ({ taskToEdit, onSubmit, onCancel, isSubmitting, theme }) => {
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:border-transparent transition-all resize-none ${
                 errors.description 
                   ? 'border-rose-500/80 focus:ring-rose-500' 
-                  : (isDark ? 'border-slate-800 focus:ring-brand-500' : 'border-slate-200 focus:ring-brand-500')
-              } ${
-                isDark 
-                  ? 'bg-slate-955/40 dark:bg-slate-950/40 focus:bg-slate-950/80 text-slate-100 placeholder-slate-500' 
-                  : 'bg-slate-50/50 focus:bg-white text-slate-800 placeholder-slate-400'
+                  : (isDark ? 'border-slate-800 bg-[#0f1322] text-slate-100 placeholder-slate-500 focus:bg-slate-950 focus:ring-brand-500' : 'border-slate-300 bg-white text-slate-950 focus:ring-brand-500')
               }`}
               disabled={isSubmitting}
             />
             {errors.description && (
-              <span className={`text-xs font-medium mt-1.5 block ${isDark ? 'text-rose-400' : 'text-rose-500'}`}>{errors.description}</span>
+              <span className={`text-xs font-medium mt-1.5 block ${isDark ? 'text-rose-500' : 'text-rose-500'}`}>{errors.description}</span>
             )}
           </div>
 
@@ -169,7 +161,7 @@ const TaskForm = ({ taskToEdit, onSubmit, onCancel, isSubmitting, theme }) => {
             <label className={`block text-sm font-semibold mb-1.5 transition-colors duration-300 ${
               isDark ? 'text-slate-300' : 'text-slate-700'
             }`}>
-              Status Status
+              Status
             </label>
             <select
               name="status"
@@ -177,8 +169,8 @@ const TaskForm = ({ taskToEdit, onSubmit, onCancel, isSubmitting, theme }) => {
               onChange={handleChange}
               className={`w-full px-4 py-3 rounded-xl border transition-all cursor-pointer ${
                 isDark 
-                  ? 'border-slate-800 bg-slate-950/40 text-slate-100 [&>option]:bg-slate-900 [&>option]:text-slate-100' 
-                  : 'border-slate-200 bg-slate-50/50 text-slate-800 [&>option]:bg-white [&>option]:text-slate-800'
+                  ? 'border-slate-800 bg-[#0f1322] text-slate-100 [&>option]:bg-[#0f1322] [&>option]:text-slate-100' 
+                  : 'border-slate-300 bg-white text-slate-950 [&>option]:bg-white [&>option]:text-slate-950'
               } focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent`}
               disabled={isSubmitting}
             >
