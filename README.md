@@ -1,5 +1,11 @@
 # TaskFlow ⚡
 
+### 🌐 Live Deployments
+* **Frontend (Vercel)**: [https://task-flow-vert-phi-57.vercel.app/](https://task-flow-vert-phi-57.vercel.app/)
+* **Backend API (Render)**: [https://taskflow-3692.onrender.com/](https://taskflow-3692.onrender.com/)
+
+---
+
 TaskFlow is a premium, minimalist MERN-stack Task Tracker Web Application designed for efficient workflow management. The system is built with a decoupled React frontend and a modular Node/Express backend following the MVC architectural pattern. It features real-time state synchronization, robust double-layer validation guards, profile settings customization, and theme-adaptive glassmorphic designs.
 
 ---
